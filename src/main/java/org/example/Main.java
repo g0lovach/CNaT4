@@ -16,7 +16,7 @@ public class Main {
        /* for(double i = 0.6;i<1.6;i+=0.1){
             System.out.println("r="+i+":");
             for(int j = 10;j<101;j+=10){*/
-                Computing computing = new Computing(0.5,30,1000,gaussianGenerator, 9, 0.95);
+                Computing computing = new Computing(0.5,10,1000,gaussianGenerator, 16, 0.95);
                 var tmp = computing.doComputing();
 
                 System.out.println(tmp.get(0).toString().replace(".",",") + "\t"

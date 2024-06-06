@@ -53,6 +53,7 @@ public class Computing {
     }
 
     private void moveNodes(List<Node> nodes){
+        GaussianGenerator pursuerGenerator = new GaussianGenerator(0,0.25,new Random());
         for(Node node:nodes){
             if (node instanceof LeadNode){
                 node.x = ((LeadNode) node).target.x;
@@ -60,8 +61,8 @@ public class Computing {
                generateTargetForLead((LeadNode) node);
             }
             else{
-                node.x = node.x + pursuerAcceleration*(((PursuerNode) node).lead.x - node.x) + generator.nextValue();
-                node.y = node.y + pursuerAcceleration*(((PursuerNode) node).lead.y - node.y) + generator.nextValue();
+                node.x = node.x + pursuerAcceleration*(((PursuerNode) node).lead.x - node.x) + pursuerGenerator.nextValue();
+                node.y = node.y + pursuerAcceleration*(((PursuerNode) node).lead.y - node.y) + pursuerGenerator.nextValue();
             }
         }
     }
@@ -75,13 +76,23 @@ public class Computing {
             //if(i%1000==0) System.out.println(i);
 
             List<Node> nodes = new ArrayList<>();
+            List<LeadNode> leads = new ArrayList<>();
             Random random = new Random();
-            LeadNode lead = new LeadNode(generator.nextValue(), generator.nextValue(), null);
-            generateTargetForLead(lead);
-            nodes.add(lead);
-            for(int j=0;j<n-1;j++){
+            int numOfGroups = random.nextInt(1,1+(int)n/2);
+            int pursuers = (int)n-numOfGroups;
+            for (int j = 0;j<numOfGroups;j++){
+                LeadNode lead = new LeadNode(generator.nextValue(), generator.nextValue(), null);
+                generateTargetForLead(lead);
+                leads.add(lead);
+                nodes.add(lead);
                 nodes.add(new PursuerNode(generator.nextValue(), generator.nextValue(), lead));
+                pursuers--;
             }
+            while(pursuers>0){
+                nodes.add(new PursuerNode(generator.nextValue(), generator.nextValue(), leads.get(random.nextInt(leads.size()))));
+                pursuers--;
+            }
+
 
             while(t<tMax){
                 var g = GraphUtils.convertPointsToMatrix(r, nodes);
@@ -119,7 +130,6 @@ public class Computing {
     private List<Double> getStatistics(){
         List<Double> res = new ArrayList<>();
         res.add((double)statDiam/countConnected);
-       // res.add((double)statCountOfElemsInMainComp/(countOfStarts-countConnected));
         res.add(((double)statCountOfElemsInMainComp/(((tMax/dT)*countOfStarts)-countConnected))*100/n);
         for(Map.Entry<Double,Double> e:periods.entrySet()){
             if(e.getKey()!=0) {
@@ -134,6 +144,7 @@ public class Computing {
         System.out.println("Probs:");
 
         for(Map.Entry<Double,Double> e: periods.entrySet()){
+            if(e.getValue()!=0)
             System.out.println(e.getKey()+": "+e.getValue()/sum);
         }
         return res;
